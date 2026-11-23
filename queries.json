@@ -1,0 +1,98 @@
+{
+  "_notes": [
+    "Query lists for scraper_v2.py, set November 22, 2026 to replicate the February 26, 2025 study.",
+    "Each area has ONE query, identical to the string used in 2025. The strings were read from the search box, page title and URL of pages saved in February 2025 (radiation hardening jobs, compound semiconductors jobs, system on chip jobs), all lowercase.",
+    "No synonym, subfield, role or early-career queries are included, so wave 2 differs from wave 1 only in date. A broader list is kept separately in queries_extended.json and is not used unless you pass it with --queries.",
+    "include_terms and exclude_terms are regular expressions matched against the title and description. They only set the 'Screen (auto)' column to keep or review; nothing is dropped by the scraper.",
+    "Record the final decision for each listing in the 'Screen (final)' column of the workbook, and report the counts in the data reduction table."
+  ],
+  "radiation_hardening": {
+    "label": "Radiation Hardening",
+    "queries": [
+      {
+        "q": "radiation hardening jobs",
+        "type": "wave1"
+      }
+    ],
+    "include_terms": [
+      "radiation[- ]harden",
+      "rad[- ]?hard",
+      "radiation effects",
+      "radiation[- ]tolerant",
+      "single[- ]event",
+      "total ionizing dose",
+      "hardness assurance",
+      "survivab",
+      "radiation test"
+    ],
+    "include_terms_case_sensitive": [
+      "\\bTID\\b",
+      "\\bSEU\\b"
+    ],
+    "exclude_terms": [
+      "radiation therap",
+      "radiolog",
+      "oncolog",
+      "dosimetrist",
+      "medical physic",
+      "health physic",
+      "x-ray tech",
+      "nuclear medicine"
+    ]
+  },
+  "compound_semiconductors": {
+    "label": "Compound Semiconductors",
+    "queries": [
+      {
+        "q": "compound semiconductors jobs",
+        "type": "wave1"
+      }
+    ],
+    "include_terms": [
+      "compound semiconductor",
+      "iii[- ]v\\b",
+      "gallium nitride",
+      "gallium arsenide",
+      "indium phosphide",
+      "silicon carbide",
+      "wide[- ]?band ?gap",
+      "epitax",
+      "mocvd",
+      "\\bmmics?\\b",
+      "\\bhemts?\\b"
+    ],
+    "include_terms_case_sensitive": [
+      "\\bGaN\\b",
+      "\\bGaAs\\b",
+      "\\bInP\\b",
+      "\\bSiC\\b",
+      "\\bInGaAs\\b",
+      "\\bAlGaN\\b"
+    ],
+    "exclude_terms": [
+      "generative adversarial"
+    ]
+  },
+  "system_on_chip": {
+    "label": "System on Chip",
+    "queries": [
+      {
+        "q": "system on chip jobs",
+        "type": "wave1"
+      }
+    ],
+    "include_terms": [
+      "system[- ]on[- ](a[- ])?chip",
+      "\\bsocs?\\b"
+    ],
+    "include_terms_case_sensitive": [],
+    "exclude_terms": [
+      "security operations cent",
+      "soc analyst",
+      "\\bsoc ?2\\b",
+      "state of charge",
+      "standard occupational",
+      "sarbanes"
+    ]
+  }
+}

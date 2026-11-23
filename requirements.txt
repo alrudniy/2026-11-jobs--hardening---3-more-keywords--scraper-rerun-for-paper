@@ -1,0 +1,11 @@
+# Requirements for scraper_v2.py
+# Install with:  pip install -r requirements.txt
+# Also needed: Google Chrome, and Python 3.9 or later (pandas 3 needs 3.11 or later).
+# Tested with selenium 4.53, pandas 3.0, openpyxl 3.1 on Python 3.13.
+
+# 4.6 or later is required: it includes Selenium Manager, which finds a matching chromedriver.
+selenium>=4.6
+
+# Reads and writes the job workbooks.
+pandas>=2.0
+openpyxl>=3.1
