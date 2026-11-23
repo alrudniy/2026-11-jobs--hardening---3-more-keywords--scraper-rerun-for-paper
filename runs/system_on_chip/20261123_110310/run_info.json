@@ -1,0 +1,35 @@
+{
+ "script_version": "2.0 (2026-11-19)",
+ "area": "system_on_chip",
+ "run_id": "20261123_110310",
+ "started": "2026-11-23T11:03:10",
+ "follow_apply": false,
+ "max_per_query": 0,
+ "browser": "chrome",
+ "browser_version": "157.0.8103.52",
+ "queries_done": [
+  {
+   "q": "system on chip jobs",
+   "type": "wave1",
+   "route": "direct_url",
+   "cards_on_page": 87,
+   "results": 87,
+   "new": 33,
+   "repeat": 0,
+   "errors": 54
+  }
+ ],
+ "selectors": {
+  "search_box_name": "q",
+  "jobs_tab_link_text": "Jobs",
+  "item_title": ".tNxQIb.PUpOsf",
+  "item_container_xpath": "./ancestor::div[@role='button' or @jsslot][1]",
+  "item_company": ".wHYlTd.MKCbgd.a3jPc",
+  "item_location": ".wHYlTd.FqK3wc.MKCbgd",
+  "details_pane": "c-wiz[aria-label^='Job details for'], div[aria-label^='Job details for']",
+  "apply_links": "a[href*='google_jobs_apply']",
+  "apply_buttons": "a[title^='Apply on '], a[title^='Apply directly on ']",
+  "share_url_attr": "data-share-url"
+ },
+ "finished": "2026-11-23T11:07:45"
+}
