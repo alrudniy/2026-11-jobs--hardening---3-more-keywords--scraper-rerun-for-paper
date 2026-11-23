@@ -67,11 +67,12 @@ SEL = {
     "search_box_name": "q",
     "jobs_tab_link_text": "Jobs",
     "item_title": ".tNxQIb.PUpOsf",                      # job title inside a result card
-    "item_container_xpath": "./ancestor::div[@jsslot][1]",   # the clickable card around a title
+    "item_container_xpath": "./ancestor::div[@role='button' or @jsslot][1]",   # the clickable card around a title (Google dropped jsslot ~Nov 2026; role=button div holds title/company/location)
     "item_company": ".wHYlTd.MKCbgd.a3jPc",
     "item_location": ".wHYlTd.FqK3wc.MKCbgd",            # "City, ST • via Platform"
-    "details_pane": "c-wiz[aria-label^='Job details for']",
+    "details_pane": "c-wiz[aria-label^='Job details for'], div[aria-label^='Job details for']",   # div since ~Nov 2026
     "apply_links": "a[href*='google_jobs_apply']",
+    "apply_buttons": "a[title^='Apply on '], a[title^='Apply directly on ']",   # since ~Nov 2026 (href is an encrypted /goto link)
     "share_url_attr": "data-share-url",
 }
 EXPANDERS = ["More job highlights", "Show full description"]
@@ -293,15 +294,45 @@ def ul_after(pane, xpath):
     return (ul.text or ul.get_attribute("textContent") or "").strip(), [i for i in items if i]
 
 
+def posting_urls(pane):
+    """Posting URLs from the pane's data-maindata JSON: the values of jobs_posting_urls_1, _2, ... in order."""
+    found = {}
+
+    def walk(x):
+        if isinstance(x, list):
+            if len(x) == 2 and isinstance(x[0], str) and isinstance(x[1], str):
+                m = re.fullmatch(r"jobs_posting_urls_(\d+)", x[0])
+                if m:
+                    found[int(m.group(1))] = x[1].strip()
+                    return
+            for y in x:
+                walk(y)
+        elif isinstance(x, dict):
+            for y in x.values():
+                walk(y)
+
+    for el in pane.find_elements(By.CSS_SELECTOR, "[data-maindata]"):
+        try:
+            walk(json.loads(el.get_attribute("data-maindata") or "null"))
+        except (ValueError, WebDriverException):
+            continue
+        if found:
+            break
+    return [found[k] for k in sorted(found)]
+
+
 def extract(pane):
     """Fields of one listing. Same page elements as the first version of the scraper."""
     H = ".//h3[text()='Job highlights']"
     rec = {}
-    rec["job_highlights_text"], rec["job_highlights_items"] = ul_after(pane, f"{H}/following-sibling::ul")
+    # Since ~Nov 2026 the h4 + ul blocks sit inside a div after the h3; the direct-sibling form is the older layout.
+    rec["job_highlights_text"], rec["job_highlights_items"] = ul_after(pane, f"({H}/following-sibling::ul | {H}/following-sibling::*//ul)")
     for key, head in (("qualifications", "Qualifications"), ("benefits", "Benefits"), ("responsibilities", "Responsibilities")):
-        rec[f"{key}_text"], rec[f"{key}_items"] = ul_after(pane, f"{H}/following-sibling::h4[text()='{head}']/following-sibling::ul")
+        rec[f"{key}_text"], rec[f"{key}_items"] = ul_after(
+            pane, f"({H}/following-sibling::h4[text()='{head}']/following-sibling::ul | "
+                  f"{H}/following-sibling::*//h4[text()='{head}']/following-sibling::ul)")
     parts, hidden_used = [], False
-    for sp in pane.find_elements(By.XPATH, ".//h3[text()='Job description']/following-sibling::span"):
+    for sp in pane.find_elements(By.XPATH, ".//*[self::h2 or self::h3][text()='Job description']/following-sibling::span"):
         t = (sp.text or "").strip()                      # visible text, as in version 1
         if not t:                                        # still collapsed: take the hidden remainder, skip the "..." marker
             tc = (sp.get_attribute("textContent") or "").strip()
@@ -312,8 +343,17 @@ def extract(pane):
     rec["job_description"] = "\n".join(parts) + ("\n" if parts else "")
     rec["description_from_hidden_text"] = hidden_used
     links, seen = [], set()
-    for a in pane.find_elements(By.CSS_SELECTOR, SEL["apply_links"]):
-        url = clean_apply_url(a.get_attribute("href"))
+    anchors = pane.find_elements(By.CSS_SELECTOR, SEL["apply_links"])
+    if anchors:                                          # older layout: the posting URL is the anchor's href
+        pairs = [(a, a.get_attribute("href")) for a in anchors]
+    else:                                                # since ~Nov 2026: href is an encrypted /goto link; the posting
+        posting = posting_urls(pane)                     # URLs sit in data-maindata, in the same order as the buttons
+        anchors = pane.find_elements(By.CSS_SELECTOR, SEL["apply_buttons"])
+        pairs = [(a, posting[i] if i < len(posting) else "") for i, a in enumerate(anchors)]
+        if len(posting) != len(anchors):
+            rec["apply_links_count_mismatch"] = f"{len(anchors)} buttons, {len(posting)} URLs"
+    for a, href in pairs:
+        url = clean_apply_url(href)
         label = (a.get_attribute("title") or a.text or a.get_attribute("textContent") or "").strip()
         if url and url not in seen:
             seen.add(url)
